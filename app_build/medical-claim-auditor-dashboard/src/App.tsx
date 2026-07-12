@@ -56,6 +56,22 @@ export default function App() {
     // ── Step 2: Start loading spinner on the freshly-cleared panel.
     setIsAnalyzing(true);
 
+    // ── DIAGNOSTIC LOG 2: What did App.tsx receive from UploadPanel? ──
+    console.group('%c[AUDIT] handleRunAudit called', 'color: #6366f1; font-weight: bold');
+    console.log('files received      :', files?.length ?? 0, 'file(s)');
+    console.log('file names          :', files?.map(f => `${f.name} (${f.sizeKb}KB, ${f.mimeType})`));
+    console.log('sampleId            :', sampleId);
+    console.log('documentText length :', documentText.length);
+    console.log('discharge_text prev :', documentText.substring(0, 120));
+    console.log('POST body (no b64)  :', {
+      providerId: selectedProvider.id,
+      filesCount: (files ?? []).length,
+      fileNames: (files ?? []).map(f => f.name),
+      discharge_text_len: documentText.length,
+      sampleId,
+    });
+    console.groupEnd();
+
     try {
       const response = await fetch('/api/audit', {
         method: 'POST',

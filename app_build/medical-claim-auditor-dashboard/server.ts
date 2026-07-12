@@ -298,9 +298,18 @@ async function startServer() {
       }
       const hasFile = allFiles.length > 0;
 
-      console.log(
-        `[/api/audit] Request — provider: ${providerId}, files: ${allFiles.length}, textLen: ${effectiveText.length}`
-      );
+      console.log('\n======================================================');
+      console.log('[AUDIT LOG 3] /api/audit POST received');
+      console.log('  providerId        :', providerId);
+      console.log('  uploadedFiles type:', typeof uploadedFiles, Array.isArray(uploadedFiles) ? `(array, len=${uploadedFiles.length})` : '');
+      console.log('  allFiles.length   :', allFiles.length);
+      allFiles.forEach((f, i) => {
+        console.log(`  file[${i}]  name=${f.name}  mime=${f.mimeType}  base64Len=${f.base64?.length ?? 'MISSING'}`);
+      });
+      console.log('  hasFile           :', hasFile);
+      console.log('  effectiveText len :', effectiveText.length);
+      console.log('  effectiveText prev:', effectiveText.substring(0, 100));
+      console.log('======================================================\n');
 
       // ── TIER 1: Python Pipeline ────────────────────────────────────────
       //  • If files uploaded  → save each to disk, pass all paths to Python
@@ -309,6 +318,12 @@ async function startServer() {
       const hasRealText = effectiveText.length > 30 &&
         !effectiveText.startsWith('[Multimodal Document Uploaded:') &&
         !effectiveText.startsWith('[') ;
+
+      // ── DIAGNOSTIC LOG 4: Branch decision ──
+      console.log('[AUDIT LOG 4] Branch decision:');
+      console.log('  hasRealText :', hasRealText, '(text len >30 and not a placeholder bracket)');
+      console.log('  hasFile     :', hasFile);
+      console.log('  → Taking    :', (hasRealText || hasFile) ? 'TIER 1 Python pipeline' : 'TIER 2 Gemini / fallback');
 
       if (hasRealText || hasFile) {
         try {
@@ -341,6 +356,14 @@ async function startServer() {
           console.log(
             `[pipeline] Starting Python pipeline — insurer: ${insurerId}, skipOcr: ${skipOcr}, paths: ${uploadedFilePaths.length}`
           );
+
+          // ── DIAGNOSTIC LOG 5: Exact Python CLI that will run ──
+          const pathsToUse2 = uploadedFilePaths.length > 0 ? uploadedFilePaths : [];
+          const previewCmd = `python3 .agents/skills/ocr-vision/scripts/ocr_vision_parse.py ${pathsToUse2.map(p => `"${p}"`).join(' ')}`;
+          console.log('[AUDIT LOG 5] Python CLI command that will run:');
+          console.log(' ', previewCmd);
+          console.log('  uploadedFilePaths:', uploadedFilePaths);
+          console.log('  skipOcr          :', skipOcr);
 
           // Pass first file path for single-file compat, Python handles multi via argv
           const firstFilePath = uploadedFilePaths[0];

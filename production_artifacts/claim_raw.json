@@ -1,37 +1,43 @@
 {
   "document_refs": {
-    "mrd_no": "MRD-2023-89472",
-    "admission_no": "ADM-99281",
+    "mrd_no": "MRD-98765",
+    "admission_no": "ADM-2023-4412",
     "hospital": "City Multispeciality Hospital",
-    "pre_auth_ref": "PA-882716",
+    "pre_auth_ref": "PA-9921-A",
     "source_file": "DISCHARGE SUMMARY & ADMISSION LEDGER.pdf",
-    "parsed_at_utc": "2026-07-12T17:58:13.111852Z"
+    "parsed_at_utc": "2026-07-12T18:03:09.454729Z"
   },
   "patient": {
-    "name": "Ramesh Kumar",
+    "name": "Rajesh Kumar",
     "age": 45,
     "sex": "Male",
-    "address": "12, Park Street, Kolkata, West Bengal - 700016",
-    "contact": "+91-9830012345",
-    "insurer": "Star Health and Allied Insurance Co. Ltd.",
-    "policy_no": "POL-7738291"
+    "address": "123, MG Road, Bengaluru, Karnataka - 560001",
+    "contact": "+91-9876543210",
+    "insurer": "Star Health Insurance",
+    "policy_no": "SHI-99281-2023"
   },
   "encounter": {
-    "admitting_physician": "Dr. A. K. Banerjee",
+    "admitting_physician": "Dr. Anil Sharma",
     "admitting_diagnosis": "Acute Appendicitis",
     "final_diagnosis": "Acute Appendicitis with Localized Peritonitis",
-    "date_of_admission": "2023-10-15",
-    "date_of_discharge": "2023-10-19",
-    "total_stay_days": 4,
+    "date_of_admission": "2023-10-12",
+    "date_of_discharge": "2023-10-15",
+    "total_stay_days": 3,
     "room_type": "Semi-Private Room",
-    "doctor_notes": "Patient presented with severe right lower quadrant abdominal pain, fever, and vomiting. Diagnosed with acute appendicitis. Underwent emergency laparoscopic appendectomy on 2023-10-15. Post-operative recovery was uneventful. Tolerating oral diet. Discharged in stable condition with oral antibiotics and analgesics."
+    "doctor_notes": "Patient presented with acute lower right quadrant abdominal pain, fever, and vomiting. Diagnosed with acute appendicitis. Underwent emergency laparoscopic appendectomy on 2023-10-12. Post-operative recovery was uneventful. Discharged in stable condition with oral antibiotics and pain management."
   },
   "line_items": [
     {
       "description": "Room Rent (Semi-Private)",
       "unit_rate_inr": 4000,
-      "quantity": "4 days",
-      "amount_inr": 16000
+      "quantity": "3 days",
+      "amount_inr": 12000
+    },
+    {
+      "description": "Laparoscopic Appendectomy Surgery Charges",
+      "unit_rate_inr": 45000,
+      "quantity": "1",
+      "amount_inr": 45000
     },
     {
       "description": "OT Charges",
@@ -40,33 +46,33 @@
       "amount_inr": 15000
     },
     {
-      "description": "Surgeon Fees",
-      "unit_rate_inr": 20000,
+      "description": "Anesthesia Charges",
+      "unit_rate_inr": 10000,
       "quantity": "1",
-      "amount_inr": 20000
+      "amount_inr": 10000
     },
     {
-      "description": "Pharmacy (Inj. Ceftriaxone, Paracetamol, etc.)",
+      "description": "Pharmacy (Medicines)",
+      "unit_rate_inr": null,
+      "quantity": "1",
+      "amount_inr": 8500
+    },
+    {
+      "description": "Laboratory Investigations (CBC, LFT, CRP)",
       "unit_rate_inr": null,
       "quantity": "1",
       "amount_inr": 4500
     },
     {
-      "description": "Laboratory (CBC, LFT, CRP)",
-      "unit_rate_inr": null,
-      "quantity": "1",
-      "amount_inr": 3200
-    },
-    {
-      "description": "Consumables",
-      "unit_rate_inr": null,
-      "quantity": "1",
-      "amount_inr": 2500
+      "description": "Doctor Consultation Fees",
+      "unit_rate_inr": 1500,
+      "quantity": "3 visits",
+      "amount_inr": 4500
     }
   ],
   "totals": {
-    "sub_total_room_rent_inr": 16000,
-    "sub_total_pharmacy_labs_inr": 7700,
-    "grand_total_billed_inr": 61200
+    "sub_total_room_rent_inr": 12000,
+    "sub_total_pharmacy_labs_inr": 13000,
+    "grand_total_billed_inr": 99000
   }
 }

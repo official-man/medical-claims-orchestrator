@@ -120,18 +120,20 @@ def run_rag_audit(mapped: dict, rules: dict, rulebook_text: str) -> dict:
         })
 
     # ── 2. Room Rent Audit ────────────────────────────────────────────────
-    room_type_raw  = claim.get("room_type", "Private Deluxe Room")
-    room_key       = extract_room_type_key(room_type_raw)
-    stay_days      = claim.get("stay_days", 1)
-    room_rent_total = claim.get("room_rent_total", 0)
-    billed_per_day  = room_rent_total // stay_days if stay_days else room_rent_total
+    room_type_raw   = claim.get("room_type") or "Private Deluxe Room"
+    room_key        = extract_room_type_key(room_type_raw)
+    # Guard: stay_days may be None if OCR could not parse admission/discharge dates.
+    # Use int(x or 1) so we never multiply by None.
+    stay_days       = int(claim.get("stay_days") or 1)
+    room_rent_total = int(claim.get("room_rent_total") or 0)
+    billed_per_day  = (room_rent_total // stay_days) if stay_days > 0 else 0
 
     policy_limit    = rules["room_rent_limits"].get(room_key, 5000)
     # Also cross-check from raw rulebook text for audit trail
     rulebook_limit  = parse_room_rate_from_rulebook(rulebook_text, room_key) or policy_limit
 
-    insurer_per_day   = min(billed_per_day, policy_limit)
-    oop_per_day       = max(0, billed_per_day - policy_limit)
+    insurer_per_day    = min(billed_per_day, policy_limit)
+    oop_per_day        = max(0, billed_per_day - policy_limit)
     insurer_total_room = insurer_per_day * stay_days
     oop_total_room     = oop_per_day * stay_days
 

@@ -146,13 +146,16 @@ def main():
         "confirmed_codes": confirmed,
         "needs_review_codes": needs_review,
         "claim_summary": {
-            "patient":             claim["patient"]["name"],
-            "age":                 claim["patient"]["age"],
-            "insurer":             claim["patient"]["insurer"],
-            "grand_total_billed":  claim["totals"]["grand_total_billed_inr"],
-            "room_rent_total":     claim["totals"]["sub_total_room_rent_inr"],
-            "room_type":           claim["encounter"]["room_type"],
-            "stay_days":           claim["encounter"]["total_stay_days"]
+            "patient":             claim["patient"]["name"] or "Unknown Patient",
+            "age":                 claim["patient"]["age"] or 0,
+            "insurer":             claim["patient"]["insurer"] or "Unknown Insurer",
+            # Guard against null totals — Gemini OCR may return null if amounts not visible
+            "grand_total_billed":  int(claim["totals"]["grand_total_billed_inr"] or 0),
+            "room_rent_total":     int(claim["totals"]["sub_total_room_rent_inr"] or 0),
+            "room_type":           claim["encounter"]["room_type"] or "Private Deluxe Room",
+            # total_stay_days must be a positive int — default to 1 if null to avoid
+            # TypeError: 'int' * 'NoneType' crash in rulebook_rag.py line 135
+            "stay_days":           int(claim["encounter"]["total_stay_days"] or 1)
         }
     }
 

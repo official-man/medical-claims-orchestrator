@@ -1,9 +1,9 @@
 {
   "meta": {
     "source_file": "production_artifacts/claim_raw.json",
-    "coded_at_utc": "2026-07-12T17:58:13.580163Z",
-    "patient": "Ramesh Kumar",
-    "policy_no": "POL-7738291",
+    "coded_at_utc": "2026-07-12T18:03:09.954699Z",
+    "patient": "Rajesh Kumar",
+    "policy_no": "SHI-99281-2023",
     "coder_strategy": "conservative — prefer 'needs_review' over uncertain codes",
     "total_codes_found": 1,
     "confirmed_count": 1,
@@ -50,12 +50,12 @@
   ],
   "needs_review_codes": [],
   "claim_summary": {
-    "patient": "Ramesh Kumar",
+    "patient": "Rajesh Kumar",
     "age": 45,
-    "insurer": "Star Health and Allied Insurance Co. Ltd.",
-    "grand_total_billed": 61200,
-    "room_rent_total": 16000,
+    "insurer": "Star Health Insurance",
+    "grand_total_billed": 99000,
+    "room_rent_total": 12000,
     "room_type": "Semi-Private Room",
-    "stay_days": 4
+    "stay_days": 3
   }
 }

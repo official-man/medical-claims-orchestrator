@@ -172,6 +172,15 @@ export default function UploadPanel({
   };
 
   const handleAuditClick = () => {
+    // ── DIAGNOSTIC LOG 1: What is in the queue when button is clicked? ──
+    console.group('%c[AUDIT] Button clicked', 'color: #10b981; font-weight: bold');
+    console.log('attachedFiles count :', attachedFiles.length);
+    console.log('attachedFiles names :', attachedFiles.map(f => `${f.name} (${f.sizeKb}KB, ${f.mimeType})`));
+    console.log('loadedSampleId      :', loadedSampleId);
+    console.log('documentText length :', documentText.length);
+    console.log('documentText preview:', documentText.substring(0, 120));
+    console.groupEnd();
+
     if (attachedFiles.length > 0) {
       // Pass the full array of file attachments up to the parent
       onRunAudit(attachedFiles, undefined);

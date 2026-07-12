@@ -1,9 +1,9 @@
 # 📋 Coverage Decision Report
 
-**Generated:** 2026-07-12 17:58 UTC  
+**Generated:** 2026-07-12 18:03 UTC  
 **Insurer:** Star Health Gold Elite (SH-GOLD-2024)  
-**Patient:** Ramesh Kumar (Age 45)  
-**Policy No:** POL-7738291  
+**Patient:** Rajesh Kumar (Age 45)  
+**Policy No:** SHI-99281-2023  
 **Primary ICD-10:** I21.9 — Acute myocardial infarction, unspecified  
 
 ---
@@ -16,8 +16,8 @@
 
 | Item | Amount (₹) |
 |------|-----------|
-| Grand Total Billed | ₹61,200 |
-| **Insurer Approved** | **₹61,200** |
+| Grand Total Billed | ₹99,000 |
+| **Insurer Approved** | **₹99,000** |
 | 🔴 User Out-of-Pocket | ₹0 |
 | Checksum Valid | ✅ Yes |
 
@@ -35,22 +35,22 @@
 ### 2. Room Rent Limit — ✅ COVERED
 
 - **Room Type:** Semi-Private Room
-- **Stay Days:** ₹4
+- **Stay Days:** ₹3
 - **Billed Per Day Inr:** ₹4,000
 - **Policy Limit Inr:** ₹5,000
-- **Insurer Pays Inr:** ₹16,000
+- **Insurer Pays Inr:** ₹12,000
 - **Oop Amount Inr:** ₹0
 - **Clause:** Clause 3.1 / 3.2
-- **Notes:** Billed: ₹4,000/day × 4 days = ₹16,000. Policy cap for Private Deluxe Room: ₹5,000/day (Clause 3.1, rulebook-verified: ₹5,000/day). Insurer covers: ₹4,000/day × 4 = ₹16,000. Out-of-pocket: ₹0/day × 4 = ₹0 (Clause 3.2 — User Out-of-Pocket Expense).
+- **Notes:** Billed: ₹4,000/day × 3 days = ₹12,000. Policy cap for Private Deluxe Room: ₹5,000/day (Clause 3.1, rulebook-verified: ₹5,000/day). Insurer covers: ₹4,000/day × 3 = ₹12,000. Out-of-pocket: ₹0/day × 3 = ₹0 (Clause 3.2 — User Out-of-Pocket Expense).
 
 ### 3. Pharmacy & Lab Charges — ✅ COVERED
 
 - **Items:** All pharmacy and diagnostic line items
-- **Billed Inr:** ₹45,200
-- **Insurer Pays Inr:** ₹45,200
+- **Billed Inr:** ₹87,000
+- **Insurer Pays Inr:** ₹87,000
 - **Oop Amount Inr:** ₹0
 - **Clause:** Clause 4.1
-- **Notes:** Pharmacy and lab charges of ₹45,200 are claimable under ICD-10 I21.9 coverage (Clause 4.1). All items corroborate the confirmed diagnosis. Full amount approved.
+- **Notes:** Pharmacy and lab charges of ₹87,000 are claimable under ICD-10 I21.9 coverage (Clause 4.1). All items corroborate the confirmed diagnosis. Full amount approved.
 
 ---
 
