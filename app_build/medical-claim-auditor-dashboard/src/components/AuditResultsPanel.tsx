@@ -185,7 +185,9 @@ ${(ruleEvaluations || []).map(rule => `### ${rule.ruleName}
     );
   }
 
-  // 2. Loading / Analyzing State
+  // 2. Loading / Analyzing State — old result is guaranteed null at this point
+  // because App.tsx sets auditResult(null) AND increments auditRunKey BEFORE
+  // setting isAnalyzing(true), so this panel is a fresh remount with no stale data.
   if (isAnalyzing) {
     return (
       <div className="flex flex-col items-center justify-center h-full min-h-[450px] bg-slate-900 rounded-2xl border border-slate-800 p-8 text-center text-white">
@@ -198,7 +200,12 @@ ${(ruleEvaluations || []).map(rule => `### ${rule.ruleName}
             <span className="relative inline-flex rounded-full h-4.5 w-4.5 bg-emerald-500"></span>
           </span>
         </div>
-        <h3 className="font-sans font-bold text-white text-base mb-2">Claim Audit In Progress</h3>
+        <h3 className="font-sans font-bold text-white text-base mb-1">Claim Audit In Progress</h3>
+        {/* Explicit "cleared" confirmation so users know stale data is gone */}
+        <div className="flex items-center space-x-1.5 mb-3">
+          <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="text-[10px] font-mono text-emerald-400 tracking-wider">PREVIOUS REPORT CLEARED — FRESH RUN STARTED</span>
+        </div>
         <p className="text-slate-400 text-xs max-w-xs leading-relaxed mb-6">
           Gemini 3.5 Flash is extracting patient demographics, running clinical checks, and calculating exact room capping adjustments...
         </p>

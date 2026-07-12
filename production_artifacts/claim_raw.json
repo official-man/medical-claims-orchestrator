@@ -1,35 +1,72 @@
 {
   "document_refs": {
-    "mrd_no": null,
-    "admission_no": null,
-    "hospital": "Family Health Centre",
-    "pre_auth_ref": null,
-    "source_file": "/home/adhi/medical-claims-orchestrator/production_artifacts/uploaded_document.jpg",
-    "parsed_at_utc": "2026-07-12T17:11:09.467492Z"
+    "mrd_no": "MRD-2023-89472",
+    "admission_no": "ADM-99281",
+    "hospital": "City Multispeciality Hospital",
+    "pre_auth_ref": "PA-882716",
+    "source_file": "DISCHARGE SUMMARY & ADMISSION LEDGER.pdf",
+    "parsed_at_utc": "2026-07-12T17:58:13.111852Z"
   },
   "patient": {
-    "name": "Prathna",
-    "age": null,
-    "sex": "Female",
-    "address": null,
-    "contact": null,
-    "insurer": null,
-    "policy_no": null
+    "name": "Ramesh Kumar",
+    "age": 45,
+    "sex": "Male",
+    "address": "12, Park Street, Kolkata, West Bengal - 700016",
+    "contact": "+91-9830012345",
+    "insurer": "Star Health and Allied Insurance Co. Ltd.",
+    "policy_no": "POL-7738291"
   },
   "encounter": {
-    "admitting_physician": "Dr. R. Keshwani",
-    "admitting_diagnosis": "Acute Gastroenteritis with Dehydration",
-    "final_diagnosis": "Acute Gastroenteritis with Dehydration",
-    "date_of_admission": "2017-03-15",
-    "date_of_discharge": null,
-    "total_stay_days": null,
-    "room_type": null,
-    "doctor_notes": "Patient presented with Acute Gastroenteritis with Dehydration. Prescribed: 1. Tab Oflazest OZ (Qty: 6, Dosage: 1-0-1), 2. Tab Azenac MR (Qty: 6, Dosage: 1-0-1), 3. Tab Andial (Qty: 5, Dosage: 2-1-1), 4. Tab Zofer (Qty: 6, Dosage: 1-0-1) for 3 days."
+    "admitting_physician": "Dr. A. K. Banerjee",
+    "admitting_diagnosis": "Acute Appendicitis",
+    "final_diagnosis": "Acute Appendicitis with Localized Peritonitis",
+    "date_of_admission": "2023-10-15",
+    "date_of_discharge": "2023-10-19",
+    "total_stay_days": 4,
+    "room_type": "Semi-Private Room",
+    "doctor_notes": "Patient presented with severe right lower quadrant abdominal pain, fever, and vomiting. Diagnosed with acute appendicitis. Underwent emergency laparoscopic appendectomy on 2023-10-15. Post-operative recovery was uneventful. Tolerating oral diet. Discharged in stable condition with oral antibiotics and analgesics."
   },
-  "line_items": [],
+  "line_items": [
+    {
+      "description": "Room Rent (Semi-Private)",
+      "unit_rate_inr": 4000,
+      "quantity": "4 days",
+      "amount_inr": 16000
+    },
+    {
+      "description": "OT Charges",
+      "unit_rate_inr": 15000,
+      "quantity": "1",
+      "amount_inr": 15000
+    },
+    {
+      "description": "Surgeon Fees",
+      "unit_rate_inr": 20000,
+      "quantity": "1",
+      "amount_inr": 20000
+    },
+    {
+      "description": "Pharmacy (Inj. Ceftriaxone, Paracetamol, etc.)",
+      "unit_rate_inr": null,
+      "quantity": "1",
+      "amount_inr": 4500
+    },
+    {
+      "description": "Laboratory (CBC, LFT, CRP)",
+      "unit_rate_inr": null,
+      "quantity": "1",
+      "amount_inr": 3200
+    },
+    {
+      "description": "Consumables",
+      "unit_rate_inr": null,
+      "quantity": "1",
+      "amount_inr": 2500
+    }
+  ],
   "totals": {
-    "sub_total_room_rent_inr": 0,
-    "sub_total_pharmacy_labs_inr": 0,
-    "grand_total_billed_inr": 0
+    "sub_total_room_rent_inr": 16000,
+    "sub_total_pharmacy_labs_inr": 7700,
+    "grand_total_billed_inr": 61200
   }
 }

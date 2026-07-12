@@ -1,12 +1,12 @@
 {
   "meta": {
     "source_file": "production_artifacts/claim_raw.json",
-    "coded_at_utc": "2026-07-12T17:11:09.919348Z",
-    "patient": "Prathna",
-    "policy_no": null,
+    "coded_at_utc": "2026-07-12T17:58:13.580163Z",
+    "patient": "Ramesh Kumar",
+    "policy_no": "POL-7738291",
     "coder_strategy": "conservative — prefer 'needs_review' over uncertain codes",
-    "total_codes_found": 0,
-    "confirmed_count": 0,
+    "total_codes_found": 1,
+    "confirmed_count": 1,
     "needs_review_count": 0
   },
   "primary_diagnosis": {
@@ -16,16 +16,46 @@
     "rationale": "Final diagnosis explicitly states 'Acute Myocardial Infarction (STEMI - Anterior Wall)'. ICD-10 I21.9 is the correct unspecified AMI code. ST-elevation pattern and Troponin elevation corroborate the diagnosis. No ambiguity — code confirmed.",
     "status": "confirmed"
   },
-  "all_codes": [],
-  "confirmed_codes": [],
+  "all_codes": [
+    {
+      "matched_term": "appendicitis",
+      "icd10_code": "K35.8",
+      "description": "Other and unspecified acute appendicitis",
+      "chapter": "Chapter XI — Diseases of the Digestive System",
+      "confidence": "HIGH",
+      "rationale": "Term 'appendicitis' found in source text. Mapped to K35.8 (Other and unspecified acute appendicitis). Confidence: HIGH. Standard mapping applied.",
+      "status": "confirmed",
+      "source_fields": [
+        "admitting_diagnosis",
+        "final_diagnosis",
+        "doctor_notes"
+      ]
+    }
+  ],
+  "confirmed_codes": [
+    {
+      "matched_term": "appendicitis",
+      "icd10_code": "K35.8",
+      "description": "Other and unspecified acute appendicitis",
+      "chapter": "Chapter XI — Diseases of the Digestive System",
+      "confidence": "HIGH",
+      "rationale": "Term 'appendicitis' found in source text. Mapped to K35.8 (Other and unspecified acute appendicitis). Confidence: HIGH. Standard mapping applied.",
+      "status": "confirmed",
+      "source_fields": [
+        "admitting_diagnosis",
+        "final_diagnosis",
+        "doctor_notes"
+      ]
+    }
+  ],
   "needs_review_codes": [],
   "claim_summary": {
-    "patient": "Prathna",
-    "age": null,
-    "insurer": null,
-    "grand_total_billed": 0,
-    "room_rent_total": 0,
-    "room_type": null,
-    "stay_days": null
+    "patient": "Ramesh Kumar",
+    "age": 45,
+    "insurer": "Star Health and Allied Insurance Co. Ltd.",
+    "grand_total_billed": 61200,
+    "room_rent_total": 16000,
+    "room_type": "Semi-Private Room",
+    "stay_days": 4
   }
 }

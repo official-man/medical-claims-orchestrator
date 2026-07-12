@@ -21,6 +21,9 @@ export default function App() {
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [auditSource, setAuditSource] = useState<string | undefined>(undefined);
+  // Incremented on every new audit run — passed as `key` to AuditResultsPanel
+  // so React forcefully unmounts + remounts it, wiping all stale tab/result state.
+  const [auditRunKey, setAuditRunKey] = useState<number>(0);
 
   // When selected provider changes, let's load the corresponding recommended sample summary
   // to make the experience instantly interactive!
@@ -42,10 +45,16 @@ export default function App() {
   // files[] is the array of AttachedFile objects (base64 + mimeType) from UploadPanel.
   // An empty array means text-only mode — the editor content is still sent.
   const handleRunAudit = async (files?: AttachedFile[], sampleId?: string) => {
-    setIsAnalyzing(true);
-    setErrorMsg(null);
+    // ── Step 1: Atomically clear ALL stale state before doing anything else.
+    // Incrementing the key forces React to fully unmount AuditResultsPanel,
+    // wiping its internal tab state and guaranteeing Ramesh Kumar's data
+    // cannot bleed through into Ch. Samuel's run.
+    setAuditRunKey(prev => prev + 1);
     setAuditResult(null);
+    setErrorMsg(null);
     setAuditSource(undefined);
+    // ── Step 2: Start loading spinner on the freshly-cleared panel.
+    setIsAnalyzing(true);
 
     try {
       const response = await fetch('/api/audit', {
@@ -73,6 +82,8 @@ export default function App() {
       if (data.source) setAuditSource(data.source);
 
       if (data.result) {
+        // ── Step 3: Set the brand-new result — AuditResultsPanel re-renders with
+        // Ch. Samuel's data, guaranteed fresh because of the key remount.
         setAuditResult(data.result);
       } else {
         throw new Error('Audit API returned empty result.');
@@ -183,7 +194,13 @@ export default function App() {
 
           {/* Right Panel - Audit ledger, itemized tables, policy outcomes */}
           <div className="lg:col-span-7 flex flex-col h-full min-h-[500px]">
+            {/*
+              key={auditRunKey} — React will fully UNMOUNT and REMOUNT this
+              component on every new audit run, making it impossible for
+              Ramesh Kumar's data to bleed through into Ch. Samuel's results.
+            */}
             <AuditResultsPanel
+              key={auditRunKey}
               auditResult={auditResult}
               selectedProvider={selectedProvider}
               isAnalyzing={isAnalyzing}
