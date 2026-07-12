@@ -1,0 +1,6 @@
+{
+  "name": "Medical Claim Auditor Dashboard",
+  "description": "A modern AI-powered dashboard for medical insurance claims auditing, supporting OCR, PDF summaries, and real-time coverage decisions.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

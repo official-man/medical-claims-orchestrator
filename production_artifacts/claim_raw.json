@@ -1,0 +1,35 @@
+{
+  "document_refs": {
+    "mrd_no": null,
+    "admission_no": null,
+    "hospital": "Family Health Centre",
+    "pre_auth_ref": null,
+    "source_file": "/home/adhi/medical-claims-orchestrator/production_artifacts/uploaded_document.jpg",
+    "parsed_at_utc": "2026-07-12T17:11:09.467492Z"
+  },
+  "patient": {
+    "name": "Prathna",
+    "age": null,
+    "sex": "Female",
+    "address": null,
+    "contact": null,
+    "insurer": null,
+    "policy_no": null
+  },
+  "encounter": {
+    "admitting_physician": "Dr. R. Keshwani",
+    "admitting_diagnosis": "Acute Gastroenteritis with Dehydration",
+    "final_diagnosis": "Acute Gastroenteritis with Dehydration",
+    "date_of_admission": "2017-03-15",
+    "date_of_discharge": null,
+    "total_stay_days": null,
+    "room_type": null,
+    "doctor_notes": "Patient presented with Acute Gastroenteritis with Dehydration. Prescribed: 1. Tab Oflazest OZ (Qty: 6, Dosage: 1-0-1), 2. Tab Azenac MR (Qty: 6, Dosage: 1-0-1), 3. Tab Andial (Qty: 5, Dosage: 2-1-1), 4. Tab Zofer (Qty: 6, Dosage: 1-0-1) for 3 days."
+  },
+  "line_items": [],
+  "totals": {
+    "sub_total_room_rent_inr": 0,
+    "sub_total_pharmacy_labs_inr": 0,
+    "grand_total_billed_inr": 0
+  }
+}

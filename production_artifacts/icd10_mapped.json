@@ -1,0 +1,31 @@
+{
+  "meta": {
+    "source_file": "production_artifacts/claim_raw.json",
+    "coded_at_utc": "2026-07-12T17:11:09.919348Z",
+    "patient": "Prathna",
+    "policy_no": null,
+    "coder_strategy": "conservative — prefer 'needs_review' over uncertain codes",
+    "total_codes_found": 0,
+    "confirmed_count": 0,
+    "needs_review_count": 0
+  },
+  "primary_diagnosis": {
+    "icd10_code": "I21.9",
+    "description": "Acute myocardial infarction, unspecified",
+    "confidence": "HIGH",
+    "rationale": "Final diagnosis explicitly states 'Acute Myocardial Infarction (STEMI - Anterior Wall)'. ICD-10 I21.9 is the correct unspecified AMI code. ST-elevation pattern and Troponin elevation corroborate the diagnosis. No ambiguity — code confirmed.",
+    "status": "confirmed"
+  },
+  "all_codes": [],
+  "confirmed_codes": [],
+  "needs_review_codes": [],
+  "claim_summary": {
+    "patient": "Prathna",
+    "age": null,
+    "insurer": null,
+    "grand_total_billed": 0,
+    "room_rent_total": 0,
+    "room_type": null,
+    "stay_days": null
+  }
+}

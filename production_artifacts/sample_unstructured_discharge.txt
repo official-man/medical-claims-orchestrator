@@ -1,0 +1,14 @@
+[Multimodal Document Uploaded: 2.jpg]
+File type: image/jpeg
+Size: 79.3 KB
+
+AI OCR is integrated. Click 'Start AI Audit' below to run real-time OCR extraction, clinical reasoning, and financial audit with Gemini 3.5 Flash.
+
+HOSPITALIZATION BILL SUMMARY (CLAIMED AMOUNT):
+1. Room Rent (Single Deluxe AC Room): 3 Days @ ₹7,500/day = ₹22,500
+2. Nursing & Service Charges: 3 Days @ ₹2,000/day = ₹6,000
+3. OT Charges & Anesthesia: ₹35,000
+4. Surgeon & Consultant Fees: ₹45,000
+5. Investigations & Lab: ₹15,500
+6. Pharmacy & Consumables (including surgical gloves, sutures, syringes, PPE, surgical drape): ₹23,000
+TOTAL CLAIMED AMOUNT: ₹1,47,000
