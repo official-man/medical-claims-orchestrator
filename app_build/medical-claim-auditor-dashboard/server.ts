@@ -38,7 +38,8 @@ function runPythonPipeline(
   documentText: string,
   insurerId: string,
   skipOcr: boolean = false,
-  uploadedFilePath?: string
+  uploadedFilePath?: string,      // first file path (convenience)
+  allFilePaths: string[] = []    // ALL uploaded file paths for multi-file OCR
 ): { claimRawPath: string; icd10MappedPath: string; coverageDecisionPath: string } {
   const dischargeFile  = path.join(REPO_ROOT, 'production_artifacts', 'sample_unstructured_discharge.txt');
   const claimRawPath   = path.join(REPO_ROOT, 'production_artifacts', 'claim_raw.json');
@@ -52,16 +53,18 @@ function runPythonPipeline(
   const execOpts = { cwd: REPO_ROOT, stdio: 'pipe' as const };
 
   if (!skipOcr) {
-    // Step 2a — OCR Vision (full pipeline: file was uploaded)
-    const targetFile = uploadedFilePath || dischargeFile;
-    console.log(`[pipeline] Running ocr_vision_parse.py with file: ${targetFile} ...`);
+    // Step 2a — OCR Vision: pass ALL file paths as separate quoted CLI args
+    // Python's sys.argv[1:] will be the full list; it processes each sequentially
+    // and merges them into one unified ClaimAudit JSON.
+    const pathsToUse = allFilePaths.length > 0 ? allFilePaths : (uploadedFilePath ? [uploadedFilePath] : [dischargeFile]);
+    const quotedPaths = pathsToUse.map(p => `"${p}"`).join(' ');
+    console.log(`[pipeline] Running ocr_vision_parse.py with ${pathsToUse.length} file(s)...`);
     execSync(
-      `python3 .agents/skills/ocr-vision/scripts/ocr_vision_parse.py "${targetFile}"`,
+      `python3 .agents/skills/ocr-vision/scripts/ocr_vision_parse.py ${quotedPaths}`,
       execOpts
     );
   } else {
-    // Step 2b — Text-direct path: skip OCR, run the parse script which
-    // reads sample_unstructured_discharge.txt and writes claim_raw.json.
+    // Step 2b — Text-direct path: write text to disk, run OCR on the txt file
     console.log('[pipeline] Running ocr_vision_parse.py (text-direct mode) ...');
     execSync(
       `python3 .agents/skills/ocr-vision/scripts/ocr_vision_parse.py "${dischargeFile}"`,
@@ -267,7 +270,17 @@ async function startServer() {
   //
   app.post('/api/audit', async (req, res) => {
     try {
-      const { providerId, documentText, discharge_text, fileBase64, fileMimeType, sampleId } = req.body;
+      const {
+        providerId,
+        documentText,
+        discharge_text,
+        // NEW: files is now an array of { base64, mimeType, name } objects
+        files: uploadedFiles = [],
+        // Legacy single-file fields kept for backward-compat
+        fileBase64,
+        fileMimeType,
+        sampleId,
+      } = req.body;
 
       if (!providerId) {
         return res.status(400).json({ error: 'Missing required field: providerId' });
@@ -275,34 +288,64 @@ async function startServer() {
 
       // Resolve the text to process: prefer discharge_text (from editor), fall back to documentText
       const effectiveText = (discharge_text || documentText || '').trim();
-      const hasFile = !!fileBase64 && !!fileMimeType;
 
-      console.log(`[/api/audit] Request — provider: ${providerId}, hasFile: ${hasFile}, textLen: ${effectiveText.length}`);
+      // Normalise the files array — merge legacy single-file field into it for backward compat
+      const allFiles: Array<{ base64: string; mimeType: string; name?: string }> = [
+        ...(Array.isArray(uploadedFiles) ? uploadedFiles : []),
+      ];
+      if (fileBase64 && fileMimeType && allFiles.length === 0) {
+        allFiles.push({ base64: fileBase64, mimeType: fileMimeType, name: 'uploaded_document' });
+      }
+      const hasFile = allFiles.length > 0;
+
+      console.log(
+        `[/api/audit] Request — provider: ${providerId}, files: ${allFiles.length}, textLen: ${effectiveText.length}`
+      );
 
       // ── TIER 1: Python Pipeline ────────────────────────────────────────
-      //  • If a file is uploaded  → full pipeline (OCR → ICD-10 → RAG)
-      //  • If only text is present → text-direct (write to disk → OCR → ICD-10 → RAG)
-      //  • If neither             → fall through to Gemini
+      //  • If files uploaded  → save each to disk, pass all paths to Python
+      //  • If only text       → text-direct (write to disk → OCR → ICD-10 → RAG)
+      //  • If neither         → fall through to Gemini
       const hasRealText = effectiveText.length > 30 &&
-        !effectiveText.startsWith('[Multimodal Document Uploaded:');
+        !effectiveText.startsWith('[Multimodal Document Uploaded:') &&
+        !effectiveText.startsWith('[') ;
 
       if (hasRealText || hasFile) {
         try {
           const insurerId = PROVIDER_ID_TO_INSURER[providerId] || 'star_health_gold';
           const skipOcr = !hasFile; // text-only = skip OCR's file handling
-          
-          let uploadedFilePath = undefined;
-          if (hasFile) {
-             const ext = fileMimeType.includes('pdf') ? 'pdf' : (fileMimeType.includes('png') ? 'png' : 'jpg');
-             uploadedFilePath = path.join(REPO_ROOT, 'production_artifacts', `uploaded_document.${ext}`);
-             console.log(`[pipeline] Writing uploaded base64 file to: ${uploadedFilePath}`);
-             fs.writeFileSync(uploadedFilePath, Buffer.from(fileBase64, 'base64'));
-          }
-          
-          console.log(`[pipeline] Starting Python pipeline — insurer: ${insurerId}, skipOcr: ${skipOcr}`);
 
+          // Save every uploaded file to production_artifacts/ with a unique name
+          const uploadedFilePaths: string[] = [];
+          if (hasFile) {
+            allFiles.forEach((f, idx) => {
+              const ext = f.mimeType.includes('pdf')
+                ? 'pdf'
+                : f.mimeType.includes('png')
+                ? 'png'
+                : 'jpg';
+              const safeName = (f.name || `document_${idx}`)
+                .replace(/[^a-zA-Z0-9._-]/g, '_')
+                .replace(/\.[^.]+$/, '');
+              const filePath = path.join(
+                REPO_ROOT,
+                'production_artifacts',
+                `uploaded_${safeName}.${ext}`
+              );
+              console.log(`[pipeline] Writing file ${idx + 1}/${allFiles.length}: ${filePath}`);
+              fs.writeFileSync(filePath, Buffer.from(f.base64, 'base64'));
+              uploadedFilePaths.push(filePath);
+            });
+          }
+
+          console.log(
+            `[pipeline] Starting Python pipeline — insurer: ${insurerId}, skipOcr: ${skipOcr}, paths: ${uploadedFilePaths.length}`
+          );
+
+          // Pass first file path for single-file compat, Python handles multi via argv
+          const firstFilePath = uploadedFilePaths[0];
           const { claimRawPath, icd10MappedPath, coverageDecisionPath } =
-            runPythonPipeline(effectiveText, insurerId, skipOcr, uploadedFilePath);
+            runPythonPipeline(effectiveText, insurerId, skipOcr, firstFilePath, uploadedFilePaths);
 
           // Read generated artifacts
           const claimRaw           = JSON.parse(fs.readFileSync(claimRawPath, 'utf-8'));

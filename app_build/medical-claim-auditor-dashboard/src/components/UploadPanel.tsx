@@ -1,14 +1,23 @@
 import React, { useState, useRef } from 'react';
-import { Upload, FileText, CheckCircle2, RotateCcw, Loader2, Sparkles, AlertCircle } from 'lucide-react';
+import { Upload, FileText, CheckCircle2, RotateCcw, Loader2, Sparkles, AlertCircle, X } from 'lucide-react';
 import { SAMPLE_SUMMARIES } from '../data/samples';
 import { SampleSummary, InsuranceProvider } from '../types';
+
+// ── Each uploaded file is stored as base64 + its MIME type ──────────────────
+export interface AttachedFile {
+  name: string;
+  base64: string;
+  mimeType: string;
+  sizeKb: number;
+}
 
 interface UploadPanelProps {
   selectedProvider: InsuranceProvider;
   documentText: string;
   setDocumentText: (text: string) => void;
   isAnalyzing: boolean;
-  onRunAudit: (fileBase64?: string, mimeType?: string, selectedSampleId?: string) => void;
+  // onRunAudit now receives an array of AttachedFile objects (may be empty)
+  onRunAudit: (files?: AttachedFile[], selectedSampleId?: string) => void;
 }
 
 export default function UploadPanel({
@@ -19,115 +28,162 @@ export default function UploadPanel({
   onRunAudit
 }: UploadPanelProps) {
   const [dragActive, setDragActive] = useState(false);
-  const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Keep track of base64 and mime type of uploaded file to pass up
-  const [attachedFile, setAttachedFile] = useState<{ base64: string; mimeType: string } | null>(null);
+  // ── Multi-file state: array of processed attachments ────────────────────
+  const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([]);
   const [loadedSampleId, setLoadedSampleId] = useState<string | null>(null);
 
-  // Handle drag and drop
+  const VALID_MIME_TYPES = ['application/pdf', 'image/png', 'image/jpeg', 'image/jpg', 'text/plain'];
+
+  // ── processFiles — converts a FileList into AttachedFile[] entries ───────
+  // For plain-text files, the content goes into the editor textarea.
+  // For PDF/Image files, they are base64-encoded and stored in attachedFiles[].
+  const processFiles = (fileList: FileList) => {
+    setFileError(null);
+    setLoadedSampleId(null);
+
+    const newAttachments: AttachedFile[] = [];
+    let textContent = '';
+    let invalidFound = false;
+
+    // Use a promise array so we can wait for all FileReaders to finish
+    const readerPromises = Array.from(fileList).map((file) => {
+      return new Promise<void>((resolve) => {
+        if (!VALID_MIME_TYPES.includes(file.type) && !file.name.endsWith('.txt')) {
+          invalidFound = true;
+          resolve();
+          return;
+        }
+
+        const reader = new FileReader();
+
+        if (file.type === 'text/plain' || file.name.endsWith('.txt')) {
+          // TXT → dump into the text editor
+          reader.onload = (e) => {
+            textContent += (textContent ? '\n\n---\n\n' : '') + (e.target?.result as string);
+            resolve();
+          };
+          reader.readAsText(file);
+        } else {
+          // PDF / Image → base64 encode and keep in attachedFiles[]
+          reader.onload = (e) => {
+            const base64Data = (e.target?.result as string).split(',')[1];
+            newAttachments.push({
+              name: file.name,
+              base64: base64Data,
+              mimeType: file.type,
+              sizeKb: parseFloat((file.size / 1024).toFixed(1)),
+            });
+            resolve();
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    });
+
+    Promise.all(readerPromises).then(() => {
+      if (invalidFound) {
+        setFileError('One or more files have unsupported types. Please upload PDF, PNG, JPEG, or TXT files only.');
+      }
+
+      // Merge new text into editor
+      if (textContent) {
+        setDocumentText(textContent);
+      }
+
+      // Merge new binary attachments into state (deduplicate by name)
+      if (newAttachments.length > 0) {
+        setAttachedFiles((prev) => {
+          const existingNames = new Set(prev.map((f) => f.name));
+          const fresh = newAttachments.filter((f) => !existingNames.has(f.name));
+          const merged = [...prev, ...fresh];
+
+          // Update text preview area to reflect all attached files
+          const names = merged.map((f) => f.name).join(', ');
+          setDocumentText(
+            `[${merged.length} Multimodal Document(s) Uploaded: ${names}]\n\n` +
+            `AI OCR is integrated. Click 'Start AI Audit' to run real-time extraction and financial audit with Gemini.`
+          );
+          return merged;
+        });
+      }
+    });
+  };
+
+  // ── Drag handlers ─────────────────────────────────────────────────────────
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true);
-    } else if (e.type === "dragleave") {
-      setDragActive(false);
-    }
-  };
-
-  // Convert uploaded file to base64 and extract text if simple text file, or pass as attachment for multimodal OCR
-  const processFile = (file: File) => {
-    setFileError(null);
-    setUploadedFileName(file.name);
-    setLoadedSampleId(null); // Reset loaded sample ID if they upload a file
-
-    const validMimeTypes = ['application/pdf', 'image/png', 'image/jpeg', 'image/jpg', 'text/plain'];
-    if (!validMimeTypes.includes(file.type) && !file.name.endsWith('.txt')) {
-      setFileError('Unsupported file type. Please upload a PDF, PNG, JPEG, or TXT file.');
-      return;
-    }
-
-    const reader = new FileReader();
-
-    if (file.type === 'text/plain' || file.name.endsWith('.txt')) {
-      reader.onload = (e) => {
-        const text = e.target?.result as string;
-        setDocumentText(text);
-        setAttachedFile(null); // No need for base64 if it's plain text
-      };
-      reader.readAsText(file);
-    } else {
-      // PDF or Image
-      reader.onload = (e) => {
-        const base64Data = (e.target?.result as string).split(',')[1];
-        setAttachedFile({
-          base64: base64Data,
-          mimeType: file.type
-        });
-
-        // Set preview placeholder text
-        setDocumentText(`[Multimodal Document Uploaded: ${file.name}]
-File type: ${file.type}
-Size: ${(file.size / 1024).toFixed(1)} KB
-
-AI OCR is integrated. Click 'Start AI Audit' below to run real-time OCR extraction, clinical reasoning, and financial audit with Gemini 3.5 Flash.`);
-      };
-      reader.readAsDataURL(file);
-    }
+    if (e.type === 'dragenter' || e.type === 'dragover') setDragActive(true);
+    else if (e.type === 'dragleave') setDragActive(false);
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      processFile(e.dataTransfer.files[0]);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      processFiles(e.dataTransfer.files);
     }
   };
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      processFile(e.target.files[0]);
+    if (e.target.files && e.target.files.length > 0) {
+      processFiles(e.target.files);
+      // Reset input so the same file can be re-added if cleared
+      e.target.value = '';
     }
   };
 
-  const triggerFileInput = () => {
-    fileInputRef.current?.click();
+  const triggerFileInput = () => fileInputRef.current?.click();
+
+  // ── Remove a single attachment ────────────────────────────────────────────
+  const removeFile = (fileName: string) => {
+    setAttachedFiles((prev) => {
+      const updated = prev.filter((f) => f.name !== fileName);
+      if (updated.length === 0) {
+        // If no binary files remain and editor still shows the placeholder, clear it
+        setDocumentText('');
+      } else {
+        const names = updated.map((f) => f.name).join(', ');
+        setDocumentText(
+          `[${updated.length} Multimodal Document(s) Uploaded: ${names}]\n\n` +
+          `AI OCR is integrated. Click 'Start AI Audit' to run real-time extraction and financial audit with Gemini.`
+        );
+      }
+      return updated;
+    });
   };
 
   const handleLoadSample = (sample: SampleSummary) => {
     setDocumentText(sample.content);
-    setUploadedFileName(null);
-    setAttachedFile(null);
+    setAttachedFiles([]);
     setFileError(null);
     setLoadedSampleId(sample.id);
   };
 
   const handleClear = () => {
     setDocumentText('');
-    setUploadedFileName(null);
-    setAttachedFile(null);
+    setAttachedFiles([]);
     setFileError(null);
     setLoadedSampleId(null);
   };
 
   const handleAuditClick = () => {
-    if (attachedFile) {
-      onRunAudit(attachedFile.base64, attachedFile.mimeType, undefined);
+    if (attachedFiles.length > 0) {
+      // Pass the full array of file attachments up to the parent
+      onRunAudit(attachedFiles, undefined);
     } else if (loadedSampleId) {
-      onRunAudit(undefined, undefined, loadedSampleId);
+      onRunAudit([], loadedSampleId);
     } else {
-      onRunAudit();
+      // Text-only mode — no file attachments
+      onRunAudit([], undefined);
     }
   };
 
-  // Filter samples that belong to the current provider or show them all labeled
   const filteredSamples = SAMPLE_SUMMARIES.filter(s => s.providerId === selectedProvider.id);
-  const otherSamples = SAMPLE_SUMMARIES.filter(s => s.providerId !== selectedProvider.id);
 
   return (
     <div className="flex flex-col h-full bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
@@ -135,9 +191,9 @@ AI OCR is integrated. Click 'Start AI Audit' below to run real-time OCR extracti
       <div className="p-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <FileText className="h-5 w-5 text-slate-700" />
-          <h2 className="font-sans font-bold text-slate-800 text-sm sm:text-base">Claim Intake & Summary</h2>
+          <h2 className="font-sans font-bold text-slate-800 text-sm sm:text-base">Claim Intake &amp; Summary</h2>
         </div>
-        {documentText && (
+        {(documentText || attachedFiles.length > 0) && (
           <button
             onClick={handleClear}
             className="flex items-center space-x-1.5 text-xs text-slate-500 hover:text-slate-800 bg-white border border-slate-200 px-2.5 py-1 rounded-md transition-colors"
@@ -149,10 +205,11 @@ AI OCR is integrated. Click 'Start AI Audit' below to run real-time OCR extracti
       </div>
 
       <div className="flex-1 p-4 overflow-y-auto space-y-4">
-        {/* PDF or Image Scan Upload */}
+        {/* Drop Zone */}
         <div>
           <label className="block text-xs font-mono text-slate-500 uppercase tracking-wider mb-2">
             Upload Discharge Summary or Claims Invoice
+            <span className="ml-2 text-emerald-600 font-bold">(Multiple Files Supported)</span>
           </label>
           <div
             id="drop-zone"
@@ -167,9 +224,11 @@ AI OCR is integrated. Click 'Start AI Audit' below to run real-time OCR extracti
                 : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50/50'
             }`}
           >
+            {/* multiple attribute added here — allows selecting several files at once */}
             <input
               ref={fileInputRef}
               type="file"
+              multiple
               className="hidden"
               onChange={handleFileInputChange}
               accept=".pdf,.png,.jpeg,.jpg,.txt"
@@ -179,28 +238,46 @@ AI OCR is integrated. Click 'Start AI Audit' below to run real-time OCR extracti
                 <Upload className="h-5 w-5 text-slate-500" />
               </div>
               <div>
-                <span className="text-xs font-bold text-slate-700">Drag & drop files here</span>
+                <span className="text-xs font-bold text-slate-700">Drag &amp; drop files here</span>
                 <span className="text-xs text-slate-500"> or </span>
                 <span className="text-xs font-bold text-emerald-600 hover:text-emerald-700 underline">browse</span>
               </div>
               <p className="text-[10px] text-slate-400 font-sans">
-                Supports PDF, scanned PNG/JPEG (OCR ready), or TXT (Max 10MB)
+                Supports multiple PDFs, scanned PNG/JPEG (OCR ready), or TXT (Max 10MB each)
               </p>
             </div>
           </div>
-          {uploadedFileName && (
-            <div className="mt-2.5 p-2 bg-slate-50 rounded-lg border border-slate-200 flex items-center justify-between text-xs text-slate-700 animate-in fade-in duration-100">
-              <div className="flex items-center space-x-2 truncate">
-                <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
-                <span className="truncate font-medium">{uploadedFileName}</span>
-              </div>
-              {attachedFile && (
-                <span className="text-[10px] bg-slate-200 px-1.5 py-0.5 rounded font-mono text-slate-600">
-                  Multimodal Payload Ready
-                </span>
-              )}
+
+          {/* ── Attached files list — one chip per file with a remove button ── */}
+          {attachedFiles.length > 0 && (
+            <div className="mt-3 space-y-1.5">
+              <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wider">
+                {attachedFiles.length} file{attachedFiles.length > 1 ? 's' : ''} queued for OCR
+              </p>
+              {attachedFiles.map((file) => (
+                <div
+                  key={file.name}
+                  className="flex items-center justify-between p-2 bg-slate-50 rounded-lg border border-slate-200 text-xs text-slate-700 animate-in fade-in duration-100"
+                >
+                  <div className="flex items-center space-x-2 truncate">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+                    <span className="truncate font-medium">{file.name}</span>
+                    <span className="text-[10px] bg-slate-200 px-1.5 py-0.5 rounded font-mono text-slate-500 shrink-0">
+                      {file.sizeKb} KB
+                    </span>
+                  </div>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); removeFile(file.name); }}
+                    className="ml-2 p-1 rounded hover:bg-rose-100 hover:text-rose-600 text-slate-400 transition-colors shrink-0"
+                    title="Remove file"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ))}
             </div>
           )}
+
           {fileError && (
             <div className="mt-2.5 p-2.5 bg-rose-50 rounded-lg border border-rose-200 flex items-start space-x-2 text-xs text-rose-800">
               <AlertCircle className="h-4 w-4 text-rose-500 shrink-0 mt-0.5" />
@@ -209,10 +286,10 @@ AI OCR is integrated. Click 'Start AI Audit' below to run real-time OCR extracti
           )}
         </div>
 
-        {/* Step 3: Editable Text Area for Summary Preview */}
+        {/* Editable Text Area */}
         <div className="flex flex-col flex-1 min-h-[220px]">
           <label className="block text-xs font-mono text-slate-500 uppercase tracking-wider mb-2">
-            Discharge Summary Text Preview & Editor
+            Discharge Summary Text Preview &amp; Editor
           </label>
           <div className="flex-1 relative flex flex-col border border-slate-200 rounded-xl overflow-hidden focus-within:ring-1 focus-within:ring-emerald-500 focus-within:border-emerald-500">
             <textarea
@@ -235,10 +312,10 @@ AI OCR is integrated. Click 'Start AI Audit' below to run real-time OCR extracti
       <div className="p-4 border-t border-slate-100 bg-slate-50 flex flex-col sm:flex-row gap-3">
         <button
           id="run-audit-button"
-          disabled={!documentText || isAnalyzing}
+          disabled={(!documentText && attachedFiles.length === 0) || isAnalyzing}
           onClick={handleAuditClick}
           className={`w-full py-3 px-4 rounded-xl font-bold flex items-center justify-center space-x-2 text-sm shadow-sm transition-all focus:outline-none ${
-            !documentText
+            (!documentText && attachedFiles.length === 0)
               ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
               : isAnalyzing
               ? 'bg-slate-800 text-slate-300'
@@ -253,7 +330,14 @@ AI OCR is integrated. Click 'Start AI Audit' below to run real-time OCR extracti
           ) : (
             <>
               <Sparkles className="h-4 w-4 text-emerald-400 animate-pulse" />
-              <span>Start AI Claim Audit</span>
+              <span>
+                Start AI Claim Audit
+                {attachedFiles.length > 1 && (
+                  <span className="ml-1.5 bg-emerald-600 text-white text-[10px] px-1.5 py-0.5 rounded-full">
+                    {attachedFiles.length} files
+                  </span>
+                )}
+              </span>
             </>
           )}
         </button>

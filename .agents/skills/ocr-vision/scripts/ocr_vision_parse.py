@@ -2,8 +2,13 @@
 """
 ocr_vision_parse.py — OCR-Vision Skill: Step 1 of the /process_claim pipeline.
 
-Uses Gemini 1.5 Pro to parse unstructured discharge summary text or multimodal files
-into a clean, structured JSON using a strict Pydantic schema.
+Accepts one or more file paths as CLI arguments. Processes each file sequentially
+via Gemini, then merges all extracted ClaimAudit objects into a single unified
+JSON output written to production_artifacts/claim_raw.json.
+
+Usage:
+  python3 ocr_vision_parse.py <file1> [<file2> <file3> ...]
+  python3 ocr_vision_parse.py  (defaults to sample_unstructured_discharge.txt)
 """
 
 import sys
@@ -16,9 +21,9 @@ from google import genai
 from google.genai import types
 
 # ── Path resolution ─────────────────────────────────────────────────────────
-REPO_ROOT       = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../"))
-DEFAULT_INPUT   = os.path.join(REPO_ROOT, "production_artifacts", "sample_unstructured_discharge.txt")
-OUTPUT_FILE     = os.path.join(REPO_ROOT, "production_artifacts", "claim_raw.json")
+REPO_ROOT     = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../"))
+DEFAULT_INPUT = os.path.join(REPO_ROOT, "production_artifacts", "sample_unstructured_discharge.txt")
+OUTPUT_FILE   = os.path.join(REPO_ROOT, "production_artifacts", "claim_raw.json")
 
 # ── Pydantic Schemas ────────────────────────────────────────────────────────
 
@@ -67,19 +72,15 @@ class ClaimAudit(BaseModel):
     line_items: List[LineItem]
     totals: Totals
 
-# ── Main Logic ──────────────────────────────────────────────────────────────
+# ── Per-file extraction ─────────────────────────────────────────────────────
 
-def main():
-    # If a file path is provided via CLI args, use it. Otherwise, default text file.
-    input_file = sys.argv[1] if len(sys.argv) > 1 else DEFAULT_INPUT
-    
-    print(f"[ocr-vision] Reading: {input_file}")
+def extract_from_file(client: genai.Client, input_file: str) -> dict:
+    """Run Gemini extraction on a single file, return raw dict."""
+    print(f"[ocr-vision]  → Processing: {os.path.basename(input_file)}")
+
     if not os.path.exists(input_file):
         raise FileNotFoundError(f"Input file not found: {input_file}")
 
-    print("[ocr-vision] Initializing Gemini client...")
-    client = genai.Client()
-    
     prompt = """
 You are an expert medical coder and billing auditor. Parse the following unstructured discharge summary and hospital bill into a precise JSON structure.
 
@@ -91,24 +92,20 @@ Ensure:
 - If no policy number is found, return null/None.
 """
 
-    # Check if input is a text file or an image/pdf
     ext = os.path.splitext(input_file)[1].lower()
-    
     contents = []
-    
+
     if ext in ['.txt', '.json', '.md', '']:
         with open(input_file, "r", encoding="utf-8") as f:
             raw_text = f.read()
         prompt += f"\n\nDischarge Text / Bill:\n{raw_text}"
         contents.append(prompt)
     else:
-        # Multimodal upload using Gemini File API
-        print(f"[ocr-vision] Uploading file to Gemini API: {input_file}")
+        # Binary file (PDF / Image) → upload via Gemini File API
+        print(f"[ocr-vision]    Uploading to Gemini File API...")
         uploaded_file = client.files.upload(file=input_file)
         contents = [uploaded_file, prompt]
 
-    print("[ocr-vision] Generating structured output with Gemini 1.5 Pro...")
-    
     response = client.models.generate_content(
         model='gemini-3.5-flash',
         contents=contents,
@@ -120,26 +117,97 @@ Ensure:
     )
 
     if not response.text:
-        raise ValueError("Failed to generate content with Gemini API")
+        raise ValueError(f"Gemini returned empty response for file: {input_file}")
 
-    claim_data = json.loads(response.text)
-    
-    # Enrich meta info
-    claim_data["document_refs"]["parsed_at_utc"] = datetime.now().isoformat() + "Z"
-    claim_data["document_refs"]["source_file"] = input_file
+    return json.loads(response.text)
+
+
+# ── Merge logic ─────────────────────────────────────────────────────────────
+
+def merge_claims(results: List[dict], source_files: List[str]) -> dict:
+    """
+    Merge multiple ClaimAudit dicts into one unified result.
+
+    Strategy:
+    - Patient / Encounter / DocumentRefs  → taken from the FIRST document
+      (usually the discharge summary, which has the richest patient data).
+    - line_items                          → concatenated from ALL documents
+      (deduplicated by description to avoid double-counting).
+    - totals                              → summed across all documents so the
+      grand total reflects the entire multi-document claim.
+    """
+    if len(results) == 1:
+        return results[0]
+
+    print(f"[ocr-vision] Merging {len(results)} extracted documents...")
+
+    base = results[0]
+
+    # Collect all line items, deduplicate by description
+    seen_descriptions = set()
+    merged_line_items = []
+    for r in results:
+        for item in r.get("line_items", []):
+            desc = item.get("description", "").strip().lower()
+            if desc and desc not in seen_descriptions:
+                seen_descriptions.add(desc)
+                merged_line_items.append(item)
+
+    # Sum totals
+    room_rent_total   = sum(r.get("totals", {}).get("sub_total_room_rent_inr", 0) for r in results)
+    pharmacy_total    = sum(r.get("totals", {}).get("sub_total_pharmacy_labs_inr", 0) for r in results)
+    grand_total       = sum(r.get("totals", {}).get("grand_total_billed_inr", 0) for r in results)
+
+    merged = {
+        **base,
+        "line_items": merged_line_items,
+        "totals": {
+            "sub_total_room_rent_inr":   room_rent_total,
+            "sub_total_pharmacy_labs_inr": pharmacy_total,
+            "grand_total_billed_inr":    grand_total,
+        },
+    }
+
+    # Note all source files in document_refs
+    merged["document_refs"]["source_file"] = " | ".join(source_files)
+    return merged
+
+
+# ── Main ─────────────────────────────────────────────────────────────────────
+
+def main():
+    # sys.argv[1:] are all the file paths passed by Node.js (may be 0, 1, or many)
+    input_files = sys.argv[1:] if len(sys.argv) > 1 else [DEFAULT_INPUT]
+
+    print(f"[ocr-vision] {len(input_files)} file(s) to process.")
+    print(f"[ocr-vision] Initializing Gemini client...")
+    client = genai.Client()
+
+    all_results = []
+    for fpath in input_files:
+        result = extract_from_file(client, fpath)
+        all_results.append(result)
+
+    # Merge all extracted claims into one
+    merged = merge_claims(all_results, input_files)
+
+    # Enrich metadata
+    merged["document_refs"]["parsed_at_utc"] = datetime.now().isoformat() + "Z"
 
     os.makedirs(os.path.dirname(OUTPUT_FILE), exist_ok=True)
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
-        json.dump(claim_data, f, indent=2, ensure_ascii=False)
+        json.dump(merged, f, indent=2, ensure_ascii=False)
 
     print(f"[ocr-vision] ✅ claim_raw.json written to: {OUTPUT_FILE}")
-    
-    patient_name = claim_data.get('patient', {}).get('name')
-    diagnosis = claim_data.get('encounter', {}).get('final_diagnosis')
-    grand_total = claim_data.get('totals', {}).get('grand_total_billed_inr')
 
-    print(f"             Patient : {patient_name or 'Unknown'}")
-    print(f"             Diagnosis: {diagnosis or 'Not parsed'}")
+    patient_name = merged.get('patient', {}).get('name')
+    diagnosis    = merged.get('encounter', {}).get('final_diagnosis')
+    grand_total  = merged.get('totals', {}).get('grand_total_billed_inr')
+    n_items      = len(merged.get('line_items', []))
+
+    print(f"             Patient   : {patient_name or 'Unknown'}")
+    print(f"             Diagnosis : {diagnosis or 'Not parsed'}")
+    print(f"             Line Items: {n_items}")
     if grand_total is not None:
         print(f"             Total Bill: ₹{grand_total:,}")
     else:

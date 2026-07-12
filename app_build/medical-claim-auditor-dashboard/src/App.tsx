@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 
 import Navbar from './components/Navbar';
-import UploadPanel from './components/UploadPanel';
+import UploadPanel, { AttachedFile } from './components/UploadPanel';
 import AuditResultsPanel from './components/AuditResultsPanel';
 
 import { INSURANCE_PROVIDERS, SAMPLE_SUMMARIES } from './data/samples';
@@ -39,7 +39,9 @@ export default function App() {
   };
 
   // Run claims audit calling Express API route /api/audit
-  const handleRunAudit = async (fileBase64?: string, fileMimeType?: string, sampleId?: string) => {
+  // files[] is the array of AttachedFile objects (base64 + mimeType) from UploadPanel.
+  // An empty array means text-only mode — the editor content is still sent.
+  const handleRunAudit = async (files?: AttachedFile[], sampleId?: string) => {
     setIsAnalyzing(true);
     setErrorMsg(null);
     setAuditResult(null);
@@ -48,18 +50,16 @@ export default function App() {
     try {
       const response = await fetch('/api/audit', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           providerId: selectedProvider.id,
           providerData: selectedProvider,
           documentText: documentText,
           discharge_text: documentText,   // editor text for text-direct pipeline
-          fileBase64: fileBase64,
-          fileMimeType: fileMimeType,
-          sampleId: sampleId
-        })
+          // NEW: send the full files array so the backend can loop over each one
+          files: files ?? [],
+          sampleId: sampleId,
+        }),
       });
 
       if (!response.ok) {
