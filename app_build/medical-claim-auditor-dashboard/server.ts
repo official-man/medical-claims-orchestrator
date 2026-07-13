@@ -3,6 +3,7 @@ import path from 'path';
 import fs from 'fs';
 import { execSync } from 'child_process';
 import dotenv from 'dotenv';
+import axios from 'axios';
 import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI, Type } from '@google/genai';
 
@@ -251,6 +252,51 @@ function mapPipelineOutputToAuditResult(
     auditSummary,
     rawMarkdown: coverageDecisionMd
   };
+}
+
+/**
+ * sendTelegramNotification — fires a message to a Telegram chat via the
+ * Bot API. Credentials are read from environment variables:
+ *
+ *   TELEGRAM_BOT_TOKEN  — token issued by @BotFather (e.g. 123456:ABC-xxx)
+ *   TELEGRAM_CHAT_ID    — numeric chat / channel ID the bot should post to
+ *
+ * The function logs a warning and exits silently when either variable is
+ * missing so the rest of the request pipeline is never disrupted.
+ *
+ * @param message  — plain-text or HTML message body to send
+ */
+async function sendTelegramNotification(message: string): Promise<void> {
+  const botToken = process.env.TELEGRAM_BOT_TOKEN;
+  const chatId   = process.env.TELEGRAM_CHAT_ID;
+
+  if (!botToken || !chatId) {
+    console.warn(
+      '[Telegram] TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID is not set. ' +
+      'Skipping notification. Add both variables to your .env file to enable this feature.'
+    );
+    return;
+  }
+
+  const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
+
+  try {
+    const response = await axios.post(url, {
+      chat_id:    chatId,
+      text:       message,
+      parse_mode: 'HTML',   // supports <b>, <i>, <code> etc.
+    });
+    console.log(
+      `[Telegram] ✅ Notification sent. Message ID: ${response.data?.result?.message_id}`
+    );
+  } catch (err: any) {
+    // Never let a Telegram failure propagate upwards — just log it
+    const detail =
+      err?.response?.data?.description ??
+      err?.message ??
+      'Unknown error';
+    console.error(`[Telegram] ❌ Failed to send notification: ${detail}`);
+  }
 }
 
 async function startServer() {
@@ -615,6 +661,62 @@ async function startServer() {
       console.error('[/api/audit] Unhandled error:', (err as Error).message);
       return res.status(500).json({
         error: 'Audit pipeline failed.',
+        details: (err as Error).message
+      });
+    }
+  });
+
+  // ── API: Export Claim endpoint ──────────────────────────────────────────
+  app.post('/api/export-claim', async (req, res) => {
+    try {
+      const auditResult = req.body;
+      
+      if (!auditResult || !auditResult.patientDetails) {
+        return res.status(400).json({ error: 'Invalid audit result payload.' });
+      }
+
+      console.log('[/api/export-claim] Dispatching claim packet to external insurer gateway...');
+      
+      // Simulate sending data to an external insurance gateway using a free webhook site.
+      // We will post the entire auditResult JSON payload.
+      const WEBHOOK_URL = 'https://webhook.site/00000000-0000-0000-0000-000000000000'; // Mock URL
+      
+      // We'll mock the axios post since the webhook url is a placeholder to avoid actual network failures if it's invalid.
+      // In a real scenario you would do: await axios.post(WEBHOOK_URL, auditResult);
+      
+      // Artificial delay to simulate network latency
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      const gatewayRef = `GW-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+
+      // ── Telegram Settlement Notification ──────────────────────────────
+      // Extract patient details and approved amount for the notification message.
+      const patientName   = auditResult.patientDetails?.name    || 'Unknown Patient';
+      const approvedAmount = auditResult.metrics?.totalApproved ?? 0;
+      const formattedAmount = approvedAmount.toLocaleString('en-IN');
+
+      const telegramMessage =
+        `🚀 <b>Claim Settlement Update</b>\n\n` +
+        `₹${formattedAmount} has been approved and credited to the hospital account ` +
+        `for Patient <b>${patientName}</b>!\n\n` +
+        `📋 Gateway Reference: <code>${gatewayRef}</code>\n` +
+        `⏱️ Settled At: ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })} IST`;
+
+      // Fire-and-forget — we await so any internal error is caught & logged,
+      // but a Telegram failure will NOT prevent a successful HTTP response.
+      await sendTelegramNotification(telegramMessage);
+
+      return res.json({
+        success: true,
+        gatewayRef: gatewayRef,
+        deliveredAt: new Date().toISOString(),
+        gatewayResponse: { status: 'RECEIVED' }
+      });
+
+    } catch (err: any) {
+      console.error('[/api/export-claim] Export failed:', (err as Error).message);
+      return res.status(500).json({
+        error: 'Failed to export claim.',
         details: (err as Error).message
       });
     }

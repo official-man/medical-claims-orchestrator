@@ -1,78 +1,72 @@
 {
   "document_refs": {
-    "mrd_no": "MRD-98765",
-    "admission_no": "ADM-2023-4412",
-    "hospital": "City Multispeciality Hospital",
-    "pre_auth_ref": "PA-9921-A",
-    "source_file": "DISCHARGE SUMMARY & ADMISSION LEDGER.pdf",
-    "parsed_at_utc": "2026-07-12T18:03:09.454729Z"
+    "mrd_no": null,
+    "admission_no": null,
+    "hospital": "Metro Heart & Vascular Institute, Delhi NCR",
+    "pre_auth_ref": null,
+    "source_file": "discharge_summary.txt",
+    "parsed_at_utc": "2026-07-12T23:30:25.533440Z"
   },
   "patient": {
-    "name": "Rajesh Kumar",
-    "age": 45,
+    "name": "Mr. Michael Vance",
+    "age": 62,
     "sex": "Male",
-    "address": "123, MG Road, Bengaluru, Karnataka - 560001",
-    "contact": "+91-9876543210",
-    "insurer": "Star Health Insurance",
-    "policy_no": "SHI-99281-2023"
+    "address": null,
+    "contact": null,
+    "insurer": "HDFC Ergo",
+    "policy_no": null
   },
   "encounter": {
-    "admitting_physician": "Dr. Anil Sharma",
-    "admitting_diagnosis": "Acute Appendicitis",
-    "final_diagnosis": "Acute Appendicitis with Localized Peritonitis",
-    "date_of_admission": "2023-10-12",
-    "date_of_discharge": "2023-10-15",
-    "total_stay_days": 3,
-    "room_type": "Semi-Private Room",
-    "doctor_notes": "Patient presented with acute lower right quadrant abdominal pain, fever, and vomiting. Diagnosed with acute appendicitis. Underwent emergency laparoscopic appendectomy on 2023-10-12. Post-operative recovery was uneventful. Discharged in stable condition with oral antibiotics and pain management."
+    "admitting_physician": null,
+    "admitting_diagnosis": "Coronary Artery Disease, Acute Coronary Syndrome (NSTEMI)",
+    "final_diagnosis": "Coronary Artery Disease, Acute Coronary Syndrome (NSTEMI)",
+    "date_of_admission": "20-Jun-2026",
+    "date_of_discharge": "22-Jun-2026",
+    "total_stay_days": 2,
+    "room_type": "ICU/CCU",
+    "doctor_notes": "CLINICAL HISTORY: A 62-year-old male with a history of mild hypertension was admitted with chest tightness, diaphoresis, and shortness of breath radiating to the left arm for 3 hours. ECG revealed ST-segment depressions in anterior leads V2-V4. Cardiac Troponin I was positive (2.4 ng/mL). The patient was immediately shifted to the Coronary Care Unit (CCU) and started on dual antiplatelet therapy (Aspirin 300mg + Clopidogrel 300mg), Low Molecular Weight Heparin (LMWH) 0.6ml Subcutaneously, and statins. PROCEDURE DETAILS: Emergency Coronary Angiography was performed on 20-Jun-2026 via right radial approach. It revealed 90% severe stenosis in the mid-Left Anterior Descending (LAD) artery. Other vessels were normal. The patient underwent Percutaneous Transluminal Coronary Angioplasty (PTCA) with deploying of a Drug-Eluting Stent (DES) (Everolimus-eluting 3.0 x 24mm) to mid LAD. The procedure was successful with TIMI-3 flow achieved. Post-procedure CCU monitoring was uneventful. Vital signs remained stable. No groin or radial hematoma. DIAGNOSTIC INVESTIGATIONS: Coronary Angiography: Single vessel CAD, 90% LAD stenosis. Echocardiography (2D Echo): LVEF 48%, mild hypokinesia of anterior wall. Serum Electrolytes: Na+ 138 mEq/L, K+ 4.1 mEq/L. Serum Creatinine: 1.1 mg/dL. LINE OF TREATMENT: Surgical/Invasive Cardiac intervention. Supported by active medication (Tab Ticagrelor 90mg BD, Tab Aspirin 75mg OD, Tab Rosuvastatin 40mg OD, Tab Metoprolol 25mg OD). The patient responded well. Vitals on discharge: BP 120/75 mmHg, HR 68/min, SpO2 98% on room air."
   },
   "line_items": [
     {
-      "description": "Room Rent (Semi-Private)",
-      "unit_rate_inr": 4000,
-      "quantity": "3 days",
-      "amount_inr": 12000
+      "description": "ICU/CCU Room Rent",
+      "unit_rate_inr": 18000,
+      "quantity": "2 Days",
+      "amount_inr": 36000
     },
     {
-      "description": "Laparoscopic Appendectomy Surgery Charges",
-      "unit_rate_inr": 45000,
+      "description": "Cath Lab & Angioplasty Procedure Charges",
+      "unit_rate_inr": 150000,
       "quantity": "1",
-      "amount_inr": 45000
+      "amount_inr": 150000
     },
     {
-      "description": "OT Charges",
-      "unit_rate_inr": 15000,
+      "description": "Drug-Eluting Stent Cost",
+      "unit_rate_inr": 120000,
       "quantity": "1",
-      "amount_inr": 15000
+      "amount_inr": 120000
     },
     {
-      "description": "Anesthesia Charges",
-      "unit_rate_inr": 10000,
+      "description": "Cardiologist & Anesthetist Professional Fees",
+      "unit_rate_inr": 95000,
       "quantity": "1",
-      "amount_inr": 10000
+      "amount_inr": 95000
     },
     {
-      "description": "Pharmacy (Medicines)",
-      "unit_rate_inr": null,
+      "description": "Diagnostics, ECG & Echo",
+      "unit_rate_inr": 24000,
       "quantity": "1",
-      "amount_inr": 8500
+      "amount_inr": 24000
     },
     {
-      "description": "Laboratory Investigations (CBC, LFT, CRP)",
-      "unit_rate_inr": null,
+      "description": "Pharmacy & Consumables (contrast dye, catheters, guide wires, syringes, gloves)",
+      "unit_rate_inr": 60000,
       "quantity": "1",
-      "amount_inr": 4500
-    },
-    {
-      "description": "Doctor Consultation Fees",
-      "unit_rate_inr": 1500,
-      "quantity": "3 visits",
-      "amount_inr": 4500
+      "amount_inr": 60000
     }
   ],
   "totals": {
-    "sub_total_room_rent_inr": 12000,
-    "sub_total_pharmacy_labs_inr": 13000,
-    "grand_total_billed_inr": 99000
+    "sub_total_room_rent_inr": 36000,
+    "sub_total_pharmacy_labs_inr": 84000,
+    "grand_total_billed_inr": 485000
   }
 }

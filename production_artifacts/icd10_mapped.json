@@ -1,9 +1,9 @@
 {
   "meta": {
     "source_file": "production_artifacts/claim_raw.json",
-    "coded_at_utc": "2026-07-12T18:03:09.954699Z",
-    "patient": "Rajesh Kumar",
-    "policy_no": "SHI-99281-2023",
+    "coded_at_utc": "2026-07-12T23:30:26.197091Z",
+    "patient": "Mr. Michael Vance",
+    "policy_no": null,
     "coder_strategy": "conservative — prefer 'needs_review' over uncertain codes",
     "total_codes_found": 1,
     "confirmed_count": 1,
@@ -18,44 +18,42 @@
   },
   "all_codes": [
     {
-      "matched_term": "appendicitis",
-      "icd10_code": "K35.8",
-      "description": "Other and unspecified acute appendicitis",
-      "chapter": "Chapter XI — Diseases of the Digestive System",
+      "matched_term": "stemi",
+      "icd10_code": "I21.9",
+      "description": "Acute myocardial infarction, unspecified",
+      "chapter": "Chapter IX — Diseases of the Circulatory System",
       "confidence": "HIGH",
-      "rationale": "Term 'appendicitis' found in source text. Mapped to K35.8 (Other and unspecified acute appendicitis). Confidence: HIGH. Standard mapping applied.",
+      "rationale": "Term 'stemi' found in source text. Mapped to I21.9 (Acute myocardial infarction, unspecified). Confidence: HIGH. Standard mapping applied.",
       "status": "confirmed",
       "source_fields": [
         "admitting_diagnosis",
-        "final_diagnosis",
-        "doctor_notes"
+        "final_diagnosis"
       ]
     }
   ],
   "confirmed_codes": [
     {
-      "matched_term": "appendicitis",
-      "icd10_code": "K35.8",
-      "description": "Other and unspecified acute appendicitis",
-      "chapter": "Chapter XI — Diseases of the Digestive System",
+      "matched_term": "stemi",
+      "icd10_code": "I21.9",
+      "description": "Acute myocardial infarction, unspecified",
+      "chapter": "Chapter IX — Diseases of the Circulatory System",
       "confidence": "HIGH",
-      "rationale": "Term 'appendicitis' found in source text. Mapped to K35.8 (Other and unspecified acute appendicitis). Confidence: HIGH. Standard mapping applied.",
+      "rationale": "Term 'stemi' found in source text. Mapped to I21.9 (Acute myocardial infarction, unspecified). Confidence: HIGH. Standard mapping applied.",
       "status": "confirmed",
       "source_fields": [
         "admitting_diagnosis",
-        "final_diagnosis",
-        "doctor_notes"
+        "final_diagnosis"
       ]
     }
   ],
   "needs_review_codes": [],
   "claim_summary": {
-    "patient": "Rajesh Kumar",
-    "age": 45,
-    "insurer": "Star Health Insurance",
-    "grand_total_billed": 99000,
-    "room_rent_total": 12000,
-    "room_type": "Semi-Private Room",
-    "stay_days": 3
+    "patient": "Mr. Michael Vance",
+    "age": 62,
+    "insurer": "HDFC Ergo",
+    "grand_total_billed": 485000,
+    "room_rent_total": 36000,
+    "room_type": "ICU/CCU",
+    "stay_days": 2
   }
 }

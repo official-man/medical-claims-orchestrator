@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { 
   ShieldCheck, ShieldAlert, FileText, AlertCircle, TrendingDown,
   Info, Sparkles, CheckCircle2, XCircle, ChevronRight, Copy, Check, Download, 
-  HelpCircle, RefreshCw, Heart, Calendar, Clock, DollarSign
+  HelpCircle, RefreshCw, Heart, Calendar, Clock, DollarSign, Send
 } from 'lucide-react';
 import { AuditResult, InsuranceProvider } from '../types';
 
@@ -21,6 +21,7 @@ export default function AuditResultsPanel({
 }: AuditResultsPanelProps) {
   const [activeTab, setActiveTab] = useState<'decision' | 'billing' | 'rules' | 'raw'>('decision');
   const [isCopied, setIsCopied] = useState(false);
+  const [exportStatus, setExportStatus] = useState<'idle' | 'exporting' | 'success' | 'error'>('idle');
 
   // Formatting helpers
   const formatCurrency = (val: number) => {
@@ -135,6 +136,27 @@ ${(ruleEvaluations || []).map(rule => `### ${rule.ruleName}
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
+  };
+
+  const handleExportToInsurer = async () => {
+    if (!auditResult) return;
+    setExportStatus('exporting');
+    try {
+      const res = await fetch('/api/export-claim', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(auditResult),
+      });
+      if (!res.ok) {
+        throw new Error('Export failed');
+      }
+      setExportStatus('success');
+      setTimeout(() => setExportStatus('idle'), 3000);
+    } catch (err) {
+      console.error(err);
+      setExportStatus('error');
+      setTimeout(() => setExportStatus('idle'), 3000);
+    }
   };
 
   // Helper to get status color
@@ -288,8 +310,43 @@ ${(ruleEvaluations || []).map(rule => `### ${rule.ruleName}
             <FileText className="h-4 w-4 text-emerald-400" />
             <span className="text-[11px] font-mono font-bold tracking-tight text-slate-300">Export Trail</span>
           </button>
+          <button
+            onClick={handleExportToInsurer}
+            disabled={exportStatus === 'exporting'}
+            className="p-2 ml-2 bg-emerald-600 hover:bg-emerald-500 rounded-lg text-white transition-colors flex items-center space-x-1.5 shadow-sm disabled:opacity-50"
+            title="Export to Insurer Gateway"
+          >
+            {exportStatus === 'exporting' ? (
+              <RefreshCw className="h-4 w-4 animate-spin" />
+            ) : exportStatus === 'success' ? (
+              <Check className="h-4 w-4" />
+            ) : (
+              <Send className="h-4 w-4" />
+            )}
+            <span className="text-[11px] font-mono font-bold tracking-tight">Export to Insurer</span>
+          </button>
         </div>
       </div>
+
+      {/* Toast Notification for Export */}
+      {exportStatus === 'success' && (
+        <div className="absolute top-4 right-4 bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-xl shadow-lg flex items-center space-x-3 z-50 animate-in slide-in-from-top-2">
+          <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+          <div className="flex flex-col">
+            <span className="text-sm font-bold">Claim Sent Successfully</span>
+            <span className="text-xs text-emerald-600">Packet delivered to insurer gateway.</span>
+          </div>
+        </div>
+      )}
+      {exportStatus === 'error' && (
+        <div className="absolute top-4 right-4 bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-xl shadow-lg flex items-center space-x-3 z-50 animate-in slide-in-from-top-2">
+          <XCircle className="h-5 w-5 text-rose-500" />
+          <div className="flex flex-col">
+            <span className="text-sm font-bold">Export Failed</span>
+            <span className="text-xs text-rose-600">Could not reach the insurer gateway.</span>
+          </div>
+        </div>
+      )}
 
       {/* Tabs list */}
       <div className="flex border-b border-slate-200 bg-slate-50 text-xs font-medium text-slate-600">

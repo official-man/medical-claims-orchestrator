@@ -1,14 +1,14 @@
 # 📋 Coverage Decision Report
 
-**Generated:** 2026-07-12 18:03 UTC  
+**Generated:** 2026-07-12 23:30 UTC  
 **Insurer:** Star Health Gold Elite (SH-GOLD-2024)  
-**Patient:** Rajesh Kumar (Age 45)  
-**Policy No:** SHI-99281-2023  
+**Patient:** Mr. Michael Vance (Age 62)  
+**Policy No:** None  
 **Primary ICD-10:** I21.9 — Acute myocardial infarction, unspecified  
 
 ---
 
-## Overall Status: ✅ APPROVED
+## Overall Status: ✅⚠️ APPROVED_WITH_OOP
 
 ---
 
@@ -16,9 +16,9 @@
 
 | Item | Amount (₹) |
 |------|-----------|
-| Grand Total Billed | ₹99,000 |
-| **Insurer Approved** | **₹99,000** |
-| 🔴 User Out-of-Pocket | ₹0 |
+| Grand Total Billed | ₹485,000 |
+| **Insurer Approved** | **₹464,000** |
+| 🔴 User Out-of-Pocket | ₹21,000 |
 | Checksum Valid | ✅ Yes |
 
 ---
@@ -32,38 +32,40 @@
 - **Clause:** Clause 4.1, Page 3
 - **Notes:** ICD-10 I21.9 is explicitly listed as a covered condition. Waiting period: 0 days (emergency — N/A). Ref: Star Health Gold Elite policy, Clause 4.1.
 
-### 2. Room Rent Limit — ✅ COVERED
+### 2. Room Rent Limit — ⚠️ PARTIAL
 
-- **Room Type:** Semi-Private Room
-- **Stay Days:** ₹3
-- **Billed Per Day Inr:** ₹4,000
-- **Policy Limit Inr:** ₹5,000
-- **Insurer Pays Inr:** ₹12,000
-- **Oop Amount Inr:** ₹0
+- **Room Type:** ICU/CCU
+- **Stay Days:** ₹2
+- **Billed Per Day Inr:** ₹18,000
+- **Policy Limit Inr:** ₹7,500
+- **Insurer Pays Inr:** ₹15,000
+- **Oop Amount Inr:** ₹21,000
 - **Clause:** Clause 3.1 / 3.2
-- **Notes:** Billed: ₹4,000/day × 3 days = ₹12,000. Policy cap for Private Deluxe Room: ₹5,000/day (Clause 3.1, rulebook-verified: ₹5,000/day). Insurer covers: ₹4,000/day × 3 = ₹12,000. Out-of-pocket: ₹0/day × 3 = ₹0 (Clause 3.2 — User Out-of-Pocket Expense).
+- **Notes:** Billed: ₹18,000/day × 2 days = ₹36,000. Policy cap for ICU: ₹7,500/day (Clause 3.1, rulebook-verified: ₹7,500/day). Insurer covers: ₹7,500/day × 2 = ₹15,000. Out-of-pocket: ₹10,500/day × 2 = ₹21,000 (Clause 3.2 — User Out-of-Pocket Expense).
 
 ### 3. Pharmacy & Lab Charges — ✅ COVERED
 
 - **Items:** All pharmacy and diagnostic line items
-- **Billed Inr:** ₹87,000
-- **Insurer Pays Inr:** ₹87,000
+- **Billed Inr:** ₹449,000
+- **Insurer Pays Inr:** ₹449,000
 - **Oop Amount Inr:** ₹0
 - **Clause:** Clause 4.1
-- **Notes:** Pharmacy and lab charges of ₹87,000 are claimable under ICD-10 I21.9 coverage (Clause 4.1). All items corroborate the confirmed diagnosis. Full amount approved.
+- **Notes:** Pharmacy and lab charges of ₹449,000 are claimable under ICD-10 I21.9 coverage (Clause 4.1). All items corroborate the confirmed diagnosis. Full amount approved.
 
 ---
 
 ## 🚩 Flags Requiring Human Review
 
-_No flags raised. Claim is clean._
+🟡 **[WARNING]** Room rent overage detected. Billed ₹18,000/day vs policy limit ₹7,500/day. Overage ₹10,500/day × 2 days = ₹21,000 classified as USER OUT-OF-POCKET EXPENSE (Clause 3.2).
+   > **Action:** Notify policyholder of out-of-pocket liability before final settlement.
+
 ---
 
 ## 📜 All ICD-10 Codes Identified
 
 | Code | Description | Confidence | Status |
 |------|-------------|------------|--------|
-| K35.8 | Other and unspecified acute appendicitis | HIGH | ✅ confirmed |
+| I21.9 | Acute myocardial infarction, unspecified | HIGH | ✅ confirmed |
 
 ---
 

@@ -1,3 +1,39 @@
-[2 Multimodal Document(s) Uploaded: 10.jpg, DISCHARGE SUMMARY & ADMISSION LEDGER.pdf]
+DISCHARGE SUMMARY
 
-AI OCR is integrated. Click 'Start AI Audit' to run real-time extraction and financial audit with Gemini.
+HOSPITAL: Metro Heart & Vascular Institute, Delhi NCR
+PATIENT NAME: Mr. Michael Vance
+AGE: 62 Years | GENDER: Male
+DATE OF ADMISSION: 20-Jun-2026
+DATE OF DISCHARGE: 22-Jun-2026 (Total Stay: 2 Days)
+DIAGNOSIS: Coronary Artery Disease, Acute Coronary Syndrome (NSTEMI)
+
+CLINICAL HISTORY:
+A 62-year-old male with a history of mild hypertension was admitted with chest tightness, diaphoresis, and shortness of breath radiating to the left arm for 3 hours. ECG revealed ST-segment depressions in anterior leads V2-V4. Cardiac Troponin I was positive (2.4 ng/mL). The patient was immediately shifted to the Coronary Care Unit (CCU) and started on dual antiplatelet therapy (Aspirin 300mg + Clopidogrel 300mg), Low Molecular Weight Heparin (LMWH) 0.6ml Subcutaneously, and statins.
+
+PROCEDURE DETAILS:
+Emergency Coronary Angiography was performed on 20-Jun-2026 via right radial approach. It revealed 90% severe stenosis in the mid-Left Anterior Descending (LAD) artery. Other vessels were normal.
+The patient underwent Percutaneous Transluminal Coronary Angioplasty (PTCA) with deploying of a Drug-Eluting Stent (DES) (Everolimus-eluting 3.0 x 24mm) to mid LAD. The procedure was successful with TIMI-3 flow achieved. Post-procedure CCU monitoring was uneventful. Vital signs remained stable. No groin or radial hematoma.
+
+DIAGNOSTIC INVESTIGATIONS:
+- Coronary Angiography: Single vessel CAD, 90% LAD stenosis.
+- Echocardiography (2D Echo): LVEF 48%, mild hypokinesia of anterior wall.
+- Serum Electrolytes: Na+ 138 mEq/L, K+ 4.1 mEq/L.
+- Serum Creatinine: 1.1 mg/dL.
+
+LINE OF TREATMENT:
+Surgical/Invasive Cardiac intervention. Supported by active medication (Tab Ticagrelor 90mg BD, Tab Aspirin 75mg OD, Tab Rosuvastatin 40mg OD, Tab Metoprolol 25mg OD). The patient responded well. Vitals on discharge: BP 120/75 mmHg, HR 68/min, SpO2 98% on room air.
+
+HOSPITALIZATION BILL SUMMARY (CLAIMED AMOUNT):
+1. ICU/CCU Room Rent: 2 Days @ ₹18,000/day = ₹36,000
+2. Cath Lab & Angioplasty Procedure Charges: ₹1,50,000
+3. Drug-Eluting Stent Cost: ₹1,20,000
+4. Cardiologist & Anesthetist Professional Fees: ₹95,000
+5. Diagnostics, ECG & Echo: ₹24,000
+6. Pharmacy & Consumables (contrast dye, catheters, guide wires, syringes, gloves): ₹60,000
+TOTAL CLAIMED AMOUNT: ₹4,85,000
+
+AUDIT ASSISTANCE NOTE:
+Please check against HDFC Ergo Optima Secure policy:
+- No Room Rent capping. ICU charges are covered in full.
+- No co-payment applies.
+- Consumables are covered up to ₹5,000. Catheters and guide wires are procedure-specific, but gloves/syringes should be classified. All medical stent expenses are payable.
